@@ -257,6 +257,7 @@ const ANNONCES_INIT = [
 ------------------------------------------------------------------- */
 
 const ROLES = [
+  { id: "fondateur", label: "Espace Fondateur", sub: "Contrôle total 
   { id: "directeur", label: "Espace Administratif", icon: ShieldCheck, desc: "Vue d'ensemble et administration" },
   { id: "enseignant", label: "Enseignant", icon: GraduationCap, desc: "Notes et absences de sa classe" },
   { id: "secretaire", label: "Secrétaire", icon: ClipboardList, desc: "Inscriptions et frais scolaires" },
