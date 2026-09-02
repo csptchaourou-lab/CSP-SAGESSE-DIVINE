@@ -778,7 +778,18 @@ function EspaceDirecteur({ eleves, personnel, setPersonnel, annonces, setAnnonce
 
   const refuser = (demande) => {
     setDemandes((prev) => prev.map((d) => d.id === demande.id ? { ...d, statut: "refusee" } : d));
-  };
+  };const modifierDemande = (demande) => {
+  const newNom = prompt("Modifier nom élève:", demande.nom);
+  if(newNom === null) return;
+  const newClasse = prompt("Modifier classe souhaitée:", demande.classeSouhaitee);
+  if(newClasse === null) return;
+  setDemandes((prev) => prev.map((d) => d.id === demande.id ? {...d, nom: newNom, classeSouhaitee: newClasse} : d));
+};
+
+const supprimerDemande = (demande) => {
+  if(!confirm("Supprimer définitivement " + demande.nom + " ? Même si Validée, elle sera effacée.")) return;
+  setDemandes((prev) => prev.filter((d) => d.id !== demande.id));
+};
 
   // --- Classes : ajout, édition en ligne, suppression ---
   const [nouvelleClasse, setNouvelleClasse] = useState("");
