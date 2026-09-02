@@ -257,11 +257,11 @@ const ANNONCES_INIT = [
 ------------------------------------------------------------------- */
 
 const ROLES = [
-  { id: "fondateur", label: "Espace Fondateur", sub: "Contrôle total 
-  { id: "directeur", label: "Espace Administratif", icon: ShieldCheck, desc: "Vue d'ensemble et administration" },
-  { id: "enseignant", label: "Enseignant", icon: GraduationCap, desc: "Notes et absences de sa classe" },
-  { id: "secretaire", label: "Secrétaire", icon: ClipboardList, desc: "Inscriptions et frais scolaires" },
-  { id: "parent", label: "Espace Parent", icon: CircleUserRound, desc: "Suivi de mon enfant" },
+  { id: "fondateur", label: "Espace Fondateur", s
+  { id: "directeur", label: "Espace Administratif
+  { id: "enseignant", label: "Enseignant", icon:
+  { id: "secretaire", label: "Secrétaire", icon:
+  { id: "parent", label: "Espace Parent", icon: C
 ];
 
 function Embleme({ logoUrl, taille = 56, iconTaille = 26 }) {
