@@ -89,7 +89,7 @@ const CLASSES_INIT = ["Maternelle 1", "Maternelle 2", "CI", "CP", "CE1", "CE2", 
 /* Codes d'accès du personnel — modifiables par le Directeur dans Paramètres.
    Le code d'un parent, lui, est le code élève (CSPxxxx) généré à la validation :
    il n'est jamais montré au parent automatiquement, le Directeur le communique lui-même. */
-const CODES_INIT = { directeur: "1234", enseignant: "5678", secretaire: "9012" };
+const CODES_INIT = { fondateur: "0000", directeur: "1234", secretaire: "3333" };
 
 const ANNEE_INIT = "2026-2027";
 
