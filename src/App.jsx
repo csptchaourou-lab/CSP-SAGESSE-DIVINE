@@ -12,8 +12,8 @@ import {
    Appels directs à l'API REST (PostgREST) via fetch — aucune librairie
    externe requise, uniquement des fonctions déjà natives du navigateur.
 ------------------------------------------------------------------- */
-const SUPABASE_URL = "https://mwuquiyudypkxdxksihc.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_hg_Gr3JKh29trcgxVp6xyw_RrdsDJIh";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 async function pgFetch(chemin, options = {}) {
   const reponse = await fetch(`${SUPABASE_URL}/rest/v1${chemin}`, {
