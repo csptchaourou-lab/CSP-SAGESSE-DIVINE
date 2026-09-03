@@ -721,11 +721,10 @@ function Coquille({ role, roleLabel, onQuitter, children, nav, actif, setActif }
       </div>
     </div>
   );
-}
 function EspaceFondateur(props) {
-  // Le fondateur voit exactement tout comme le directeur + tout le pouvoir
-  return EspaceDirecteur(props);
-       }
+  // Le fondateur a TOUS les pouvoirs du directeur
+  return EspaceDirecteur({...props, isFondateur: true, roleProp: "fondateur" });
+}
 
 /* ------------------------------------------------------------------
    ESPACE DIRECTEUR
