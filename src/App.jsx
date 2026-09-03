@@ -2858,8 +2858,11 @@ export default function EcoleConnecteeCSP() {
   }, []);
 
   // --- Synchronisation automatique : dès qu'un état change ici, on répercute vers Supabase ---
-  const [erreurSync, setErreurSync] = useState(null);
-  const avecSuivi = (promesse) => promesse.catch((err) => setErreurSync(err.message || String(err)));
+  const avecSuivi = (promesse) => promesse.catch((err) => {
+  const m = (err.message || String(err)).toLowerCase();
+  if(m.includes('fetch') || m.includes('network') || !navigator.onLine){ console.warn('Sync offline', err); return; }
+  setErreurSync(err.message || String(err));
+});
 
   useEffect(() => { if (pretPourSync.current) avecSuivi(syncEcole(ecole, anneeScolaire)); }, [ecole, anneeScolaire]);
   useEffect(() => { if (pretPourSync.current) avecSuivi(syncCodes(codes)); }, [codes]);
