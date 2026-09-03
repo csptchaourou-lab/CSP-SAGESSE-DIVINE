@@ -730,12 +730,7 @@ function EspaceFondateur(props) {
    ESPACE DIRECTEUR
 ------------------------------------------------------------------- */
 
-function EspaceDirecteur({ eleves, personnel, setPersonnel, annonces, setAnnonces, demandes, setDemandes, setEleves, isFondateur }) {
-  const {
-    ecole, setEcole, classes, setClasses,
-    fraisTypes, setFraisTypes, anneeScolaire, setAnneeScolaire,
-    codes, setCodes, matieresParClasse, setMatieresParClasse,
-  } = useEcole();
+function EspaceDirecteur({ eleves, personnel, setPersonnel, annonces, setAnnonces, demandes, setDemandes, setEleves, isFondateur, ecole, setEcole, classes, setClasses, fraisTypes, setFraisTypes, anneeScolaire, setAnneeScolaire, codes, setCodes, matieresParClasse, setMatieresParClasse }) {
   const [onglet, setOnglet] = useState("dashboard");
   const [classeVue, setClasseVue] = useState(classes[0] || "CI");
   const [nouvelleAnnonce, setNouvelleAnnonce] = useState("");
