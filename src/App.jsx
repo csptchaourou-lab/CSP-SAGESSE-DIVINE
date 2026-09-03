@@ -721,10 +721,26 @@ function Coquille({ role, roleLabel, onQuitter, children, nav, actif, setActif }
       </div>
     </div>
   );
-function EspaceFondateur(props) {
-  return <EspaceDirecteur {...props} isFondateur={true} />;
-}
-  
+function EspaceFondateur({ demandes=[], setDemandes, eleves=[], personnel=[], annonces=[] }) {
+  return (
+    <div style={{padding:'20px', paddingBottom:'80px'}}>
+      <h1 style={{fontSize:'22px', fontWeight:'bold', color:'#0a3'}}>✅ FONDATEUR OK - {demandes.length} demandes</h1>
+      <p style={{marginTop:'10px'}}>{eleves.length} élèves | {personnel.length} staff | {annonces.length} annonces</p>
+      <div style={{marginTop:'20px', display:'grid', gap:'10px'}}>
+        {demandes.map(d=>(
+          <div key={d.id} style={{border:'1px solid #ddd', padding:'10px', borderRadius:'10px', background:'white'}}>
+            <b>{d.nom}</b> - {d.prenom} - {d.statut || 'en attente'} - {d.classeDemandee}
+            <div style={{marginTop:'8px', display:'flex', gap:'8px'}}>
+              <button onClick={()=>{if(confirm('Supprimer '+d.nom+' ?')) setDemandes(p=>p.filter(x=>x.id!==d.id))}} style={{padding:'6px 10px', background:'#fee', borderRadius:'20px'}}>🗑️ Supprimer</button>
+              <button onClick={()=> setDemandes(p=>p.map(x=> x.id===d.id ? {...x, statut: x.statut==='Validée'?'en attente':'Validée'} : x))} style={{padding:'6px 10px', background:'#ffe9c0', borderRadius:'20px'}}>↩️ Annuler/Valider</button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <p style={{marginTop:'20px', color:'#666'}}>Si tu vois ça, la page blanche est finie. On remettra le gros dashboard après.</p>
+    </div>
+  );
+} 
 /* ------------------------------------------------------------------
    ESPACE DIRECTEUR
 ------------------------------------------------------------------- */
