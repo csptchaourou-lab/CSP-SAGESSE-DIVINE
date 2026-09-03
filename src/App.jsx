@@ -1685,6 +1685,7 @@ const supprimerDemande = (demande) => {
 
           <Panel title="Codes d'accès du personnel" icon={KeyRound}>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <Champ label="Code Fondateur" value={codes.fondateur} onChange={champCode("fondateur")} />
               <Champ label="Code Directeur" value={codes.directeur} onChange={champCode("directeur")} />
               <Champ label="Code Enseignant" value={codes.enseignant} onChange={champCode("enseignant")} />
               <Champ label="Code Secrétaire" value={codes.secretaire} onChange={champCode("secretaire")} />
