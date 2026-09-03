@@ -722,15 +722,15 @@ function Coquille({ role, roleLabel, onQuitter, children, nav, actif, setActif }
     </div>
   );
 function EspaceFondateur(props) {
-  // Le fondateur a TOUS les pouvoirs du directeur
-  return EspaceDirecteur({...props, isFondateur: true, roleProp: "fondateur" });
+  // Le fondateur = directeur avec tous les droits
+  return EspaceDirecteur({ ...props, isFondateur: true });
 }
 
 /* ------------------------------------------------------------------
    ESPACE DIRECTEUR
 ------------------------------------------------------------------- */
 
-function EspaceDirecteur({ eleves, personnel, setPersonnel, annonces, setAnnonces, demandes, setDemandes, setEleves }) {
+function EspaceDirecteur({ eleves, personnel, setPersonnel, annonces, setAnnonces, demandes, setDemandes, setEleves, isFondateur }) {
   const {
     ecole, setEcole, classes, setClasses,
     fraisTypes, setFraisTypes, anneeScolaire, setAnneeScolaire,
