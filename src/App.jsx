@@ -2860,7 +2860,11 @@ export default function EcoleConnecteeCSP() {
   // --- Synchronisation automatique : dès qu'un état change ici, on répercute vers Supabase ---
   const avecSuivi = (promesse) => promesse.catch((err) => {
   const m = (err.message || String(err)).toLowerCase();
-  if(m.includes('fetch') || m.includes('network') || !navigator.onLine){ console.warn('Sync offline', err); return; }
+  if(m.includes('fetch') ||
+m.includes('network') ||
+m.includes('404') ||
+m.includes('not_found') ||
+!navigator.onLine){ console.warn('Sync offline', err); return; }
   setErreurSync(err.message || String(err));
 });
 
