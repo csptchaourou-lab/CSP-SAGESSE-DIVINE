@@ -5,6 +5,16 @@ function genererCodeEleve() {
   let s = ""; for(let i=0;i<4;i++) s+=caracteres[Math.floor(Math.random()*caracteres.length)];
   return `CSP${s}`;
 }
+function ageDepuis(dateNaissance) {
+  if (!dateNaissance) return null;
+  const naissance = new Date(dateNaissance);
+  if (isNaN(naissance)) return null;
+  const aujourdhui = new Date();
+  let age = aujourdhui.getFullYear() - naissance.getFullYear();
+  const pasEncore = aujourdhui.getMonth() < naissance.getMonth() || (aujourdhui.getMonth() === naissance.getMonth() && aujourdhui.getDate() < naissance.getDate());
+  if (pasEncore) age -= 1;
+  return age >= 0 ? age : null;
+}
 
 export default function App() {
   const [role, setRole] = useState(null);
@@ -27,6 +37,7 @@ export default function App() {
   });
 
   const [form, setForm] = useState({prenom:'', nom:'', sexe:'', naissance:'', classe:'CM1', parrainNom:'', parrainTel:'', message:''});
+  const ageForm = ageDepuis(form.naissance);
 
   const CLASSES = ["Maternelle 1","Maternelle 2","CI","CP","CE1","CE2","CM1","CM2","6ème","5ème","4ème","3ème"];
   const CODES = { fondateur:'0000', admin:'1234', enseignant:'5678', secretaire:'9012' };
@@ -37,20 +48,35 @@ export default function App() {
 
   const soumettreDemande = (e)=>{
     e.preventDefault();
-    if(!form.prenom || !form.nom || !form.sexe || !form.naissance || !form.parrainNom || !form.parrainTel){ alert('Remplis tous les champs'); return; }
-    const nouvelle = { id:`DEM-${Math.floor(1000+Math.random()*9000)}`, ...form, date:'aujourd\'hui', statut:'en_attente', origine:'en_ligne' };
+    if(!form.prenom || !form.nom || !form.sexe || !form.naissance || !form.parrainNom || !form.parrainTel){ alert('Remplis tous les champs *'); return; }
+    const age = ageDepuis(form.naissance);
+    const nouvelle = { id:`DEM-${Math.floor(1000+Math.random()*9000)}`, ...form, age, date:"aujourd'hui", statut:'en_attente', origine:'en_ligne' };
     setDemandes([nouvelle, ...demandes]);
     setForm({prenom:'', nom:'', sexe:'', naissance:'', classe:'CM1', parrainNom:'', parrainTel:'', message:''});
     setVueInscription(false);
-    alert(`Demande envoyée pour ${nouvelle.prenom} ${nouvelle.nom}. Le Directeur va te contacter au ${nouvelle.parrainTel}`);
+    alert(`Demande envoyée pour ${nouvelle.prenom} ${nouvelle.nom} (${age} ans). Le Directeur va te contacter.`);
   };
 
   const validerDemande = (d)=>{
     const codeEleve = genererCodeEleve();
     setCodesGeneres([codeEleve, ...codesGeneres]);
-    setEleves([...eleves, {id:codeEleve, nom:d.nom, prenom:d.prenom, classe:d.classe, naissance:d.naissance}]);
+    setEleves([...eleves, {id:codeEleve, nom:d.nom, prenom:d.prenom, classe:d.classe, naissance:d.naissance, age:d.age}]);
     setDemandes(demandes.map(x=> x.id===d.id ? {...x, statut:'validee', codeGenere:codeEleve} : x));
-    alert(`${d.prenom} ${d.nom} validé ! Code généré: ${codeEleve} - Communique-le au parent.`);
+    alert(`${d.prenom} ${d.nom} validé ! Code: ${codeEleve}`);
+  };
+  const modifierDemande = (d)=>{
+    const newNom = prompt(`Modifier nom de ${d.prenom}:`, d.nom); if(newNom===null) return;
+    const newPrenom = prompt(`Modifier prénom:`, d.prenom); if(newPrenom===null) return;
+    const newClasse = prompt(`Modifier classe (ex: ${CLASSES.join(', ')}):`, d.classe); if(newClasse===null) return;
+    setDemandes(demandes.map(x=> x.id===d.id ? {...x, nom:newNom, prenom:newPrenom, classe:newClasse} : x));
+  };
+  const supprimerDemande = (d)=>{
+    if(!confirm(`Supprimer définitivement ${d.prenom} ${d.nom} ? Même si validée, elle sera effacée.`)) return;
+    setDemandes(demandes.filter(x=> x.id!==d.id));
+    if(d.codeGenere){
+      setEleves(eleves.filter(e=> e.id!==d.codeGenere));
+      setCodesGeneres(codesGeneres.filter(c=> c!==d.codeGenere));
+    }
   };
 
   const spaces = [
@@ -65,7 +91,7 @@ export default function App() {
     const saisie = code.trim().toUpperCase();
     if(role==='parent'){
       if(/^CSP[A-Z0-9]{4}$/.test(saisie) && (codesGeneres.includes(saisie) || eleves.find(e=>e.id===saisie))){ setEleveId(saisie); setErreur(''); }
-      else setErreur('Code introuvable. Essaie CSP0142 ou CSP2JH6 ou un code généré par le Directeur');
+      else setErreur('Code introuvable. Ex: CSP0142 ou CSP2JH6 généré par Directeur');
       return;
     }
     if(CODES[role]===code) setErreur(''); else setErreur(`Incorrect. Démo: ${CODES[role]}`);
@@ -79,25 +105,23 @@ export default function App() {
         <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-6 mt-6">
           <button onClick={()=>setVueInscription(false)} className="mb-4 px-4 py-2 bg-gray-200 rounded-lg">← Retour accueil</button>
           <p className="text-[11px] tracking-widest text-blue-800 font-bold">INSCRIPTION EN LIGNE</p>
-          <h1 className="text-2xl font-bold text-slate-900">CSP « Sagesse Divine »</h1>
-          <p className="text-sm text-gray-600">Kéra, Temple EPMB Cité de Paix — Tchaourou</p>
+          <h1 className="text-2xl font-bold">CSP « Sagesse Divine »</h1>
           <form onSubmit={soumettreDemande} className="mt-6 space-y-3">
             <div className="grid grid-cols-2 gap-3">
-              <div><label className="text-xs font-medium">Prénom enfant *</label><input value={form.prenom} onChange={e=>setForm({...form, prenom:e.target.value})} className="w-full border rounded-lg px-3 py-2" placeholder="Grâce"/></div>
-              <div><label className="text-xs font-medium">Nom enfant *</label><input value={form.nom} onChange={e=>setForm({...form, nom:e.target.value})} className="w-full border rounded-lg px-3 py-2" placeholder="Adjovi"/></div>
+              <div><label className="text-xs font-medium">Prénom *</label><input value={form.prenom} onChange={e=>setForm({...form, prenom:e.target.value})} className="w-full border rounded-lg px-3 py-2"/></div>
+              <div><label className="text-xs font-medium">Nom *</label><input value={form.nom} onChange={e=>setForm({...form, nom:e.target.value})} className="w-full border rounded-lg px-3 py-2"/></div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><label className="text-xs font-medium">Sexe *</label><select value={form.sexe} onChange={e=>setForm({...form, sexe:e.target.value})} className="w-full border rounded-lg px-3 py-2"><option value="">Choisir</option><option value="F">Féminin</option><option value="M">Masculin</option></select></div>
-              <div><label className="text-xs font-medium">Naissance *</label><input type="date" value={form.naissance} onChange={e=>setForm({...form, naissance:e.target.value})} className="w-full border rounded-lg px-3 py-2"/></div>
+              <div><label className="text-xs font-medium">Sexe *</label><div className="flex gap-2 mt-1"><button type="button" onClick={()=>setForm({...form, sexe:'F'})} className={`flex-1 py-2 rounded-lg border text-sm ${form.sexe==='F'?'bg-yellow-100 border-yellow-500 font-bold':''}`}>Féminin</button><button type="button" onClick={()=>setForm({...form, sexe:'M'})} className={`flex-1 py-2 rounded-lg border text-sm ${form.sexe==='M'?'bg-yellow-100 border-yellow-500 font-bold':''}`}>Masculin</button></div></div>
+              <div><label className="text-xs font-medium">Naissance *</label><div className="flex items-center gap-2 mt-1"><input type="date" value={form.naissance} onChange={e=>setForm({...form, naissance:e.target.value})} className="w-full border rounded-lg px-3 py-2"/><span className="text-xs bg-blue-50 px-2 py-1 rounded-full whitespace-nowrap">{ageForm!==null ? `${ageForm} ans` : 'âge ?'}</span></div>{ageForm!==null && <p className="text-[10px] text-gray-400 mt-1">Calcul auto: {ageForm} an{ageForm>1?'s':''}</p>}</div>
             </div>
             <div><label className="text-xs font-medium">Classe souhaitée *</label><select value={form.classe} onChange={e=>setForm({...form, classe:e.target.value})} className="w-full border rounded-lg px-3 py-2">{CLASSES.map(c=><option key={c} value={c}>{c}</option>)}</select></div>
             <div className="grid grid-cols-2 gap-3">
-              <div><label className="text-xs font-medium">Nom parrain *</label><input value={form.parrainNom} onChange={e=>setForm({...form, parrainNom:e.target.value})} className="w-full border rounded-lg px-3 py-2" placeholder="M. Adjovi"/></div>
+              <div><label className="text-xs font-medium">Nom parrain *</label><input value={form.parrainNom} onChange={e=>setForm({...form, parrainNom:e.target.value})} className="w-full border rounded-lg px-3 py-2"/></div>
               <div><label className="text-xs font-medium">Tél parrain *</label><input value={form.parrainTel} onChange={e=>setForm({...form, parrainTel:e.target.value})} className="w-full border rounded-lg px-3 py-2" placeholder="97 11 22 33"/></div>
             </div>
-            <div><label className="text-xs font-medium">Message (optionnel)</label><textarea value={form.message} onChange={e=>setForm({...form, message:e.target.value})} rows={2} className="w-full border rounded-lg px-3 py-2" placeholder="Précision..."/></div>
-            <button type="submit" className="w-full bg-yellow-600 text-white py-3 rounded-xl font-bold">📨 Soumettre la demande</button>
-            <p className="text-[10px] text-gray-400 text-center">Après validation, le Directeur te donnera le code type CSP2JH6</p>
+            <div><label className="text-xs font-medium">Message</label><textarea value={form.message} onChange={e=>setForm({...form, message:e.target.value})} rows={2} className="w-full border rounded-lg px-3 py-2"/></div>
+            <button type="submit" className="w-full bg-yellow-600 text-white py-3 rounded-xl font-bold">📨 Soumettre (âge calculé: {ageForm!==null?`${ageForm} ans`:'?'})</button>
           </form>
         </div>
       </div>
@@ -123,42 +147,34 @@ export default function App() {
       <div className="min-h-screen bg-gray-50 p-6">
         <div className="max-w-5xl mx-auto bg-white rounded-2xl shadow p-6">
           <button onClick={()=>{setRole(null); setCode(''); setEleveId('');}} className="mb-6 px-4 py-2 bg-gray-200 rounded-lg">← Quitter</button>
-          <h1 className="text-2xl font-bold">{spaces.find(s=>s.id===role)?.label} {role==='parent' && eleveId}</h1>
+          <h1 className="text-2xl font-bold">{spaces.find(s=>s.id===role)?.label}</h1>
           
           {role==='admin' && (
             <div className="mt-6">
-              <h2 className="font-bold">📋 Bibliothèque des demandes ({demandes.filter(d=>d.statut==='en_attente').length} en attente)</h2>
-              <div className="mt-3 space-y-2 max-h-[60vh] overflow-auto">
-                {demandes.length===0 && <p className="text-sm text-gray-500">Aucune demande. Clique sur Inscription en ligne depuis l'accueil pour tester.</p>}
+              <h2 className="font-bold">📋 Bibliothèque ({demandes.filter(d=>d.statut==='en_attente').length} en attente) - CORRECTION demandée</h2>
+              <p className="text-xs text-gray-500 mt-1">✅ Âge calculé auto + ✅ Valider/Refuser + ✅ Modifier + ✅ Supprimer même validée</p>
+              <div className="mt-3 space-y-2">
                 {demandes.map(d=>(
-                  <div key={d.id} className="border rounded-xl p-4 bg-white">
-                    <div className="flex justify-between"><b>{d.prenom} {d.nom} ({d.sexe}) - {d.classe}</b><span className={`text-xs px-2 py-1 rounded-full ${d.statut==='en_attente'?'bg-yellow-100':'bg-green-100'}`}>{d.statut} {d.codeGenere && `→ ${d.codeGenere}`}</span></div>
-                    <p className="text-xs text-gray-600">Né: {d.naissance} | Parrain: {d.parrainNom} {d.parrainTel} | {d.date} | {d.origine}</p>
-                    {d.message && <p className="text-xs italic">"{d.message}"</p>}
-                    {d.statut==='en_attente' && <div className="mt-2 flex gap-2"><button onClick={()=>validerDemande(d)} className="px-3 py-1 bg-green-600 text-white rounded-lg text-xs">✅ Valider → génère CSP2JH6</button><button onClick={()=>setDemandes(demandes.map(x=> x.id===d.id ? {...x, statut:'refusee'}:x))} className="px-3 py-1 bg-red-100 text-red-700 rounded-lg text-xs">Refuser</button></div>}
+                  <div key={d.id} className="border rounded-xl p-4">
+                    <div className="flex justify-between gap-2"><b className="text-sm">{d.prenom} {d.nom} ({d.sexe}, {d.age!==null?`${d.age} ans`:'âge ?'}) - {d.classe}</b><span className={`text-xs px-2 py-1 rounded-full h-fit ${d.statut==='en_attente'?'bg-yellow-100':d.statut==='validee'?'bg-green-100':'bg-gray-100'}`}>{d.statut} {d.codeGenere && `→ ${d.codeGenere}`}</span></div>
+                    <p className="text-xs text-gray-600 mt-1">Né: {d.naissance} | Parrain: {d.parrainNom} {d.parrainTel} | {d.date}</p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {d.statut==='en_attente' && <><button onClick={()=>validerDemande(d)} className="px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-bold">✅ Valider → CSP2JH6</button><button onClick={()=>setDemandes(demandes.map(x=> x.id===d.id ? {...x, statut:'refusee'}:x))} className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-xs">❌ Refuser</button></>}
+                      {d.statut!=='en_attente' && <button onClick={()=>setDemandes(demandes.map(x=> x.id===d.id ? {...x, statut:'en_attente'}:x))} className="px-3 py-1.5 bg-gray-200 rounded-lg text-xs">↩️ Remettre en attente</button>}
+                      <button onClick={()=>modifierDemande(d)} className="px-3 py-1.5 bg-yellow-100 text-yellow-800 rounded-lg text-xs">✏️ Modifier</button>
+                      <button onClick={()=>supprimerDemande(d)} className="px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs">🗑️ Supprimer (même validée)</button>
+                    </div>
                   </div>
                 ))}
+                {demandes.length===0 && <p className="text-sm text-gray-400">Aucune demande. Teste l'inscription depuis l'accueil.</p>}
               </div>
-              <div className="mt-6">
-                <h2 className="font-bold">👨‍🎓 Élèves inscrits ({eleves.length})</h2>
-                <div className="mt-2 flex flex-wrap gap-2">{eleves.map(e=><span key={e.id} className="px-3 py-1 bg-blue-50 border rounded-full text-xs font-mono">{e.id} - {e.prenom} {e.nom} ({e.classe})</span>)}</div>
+              <div className="mt-6 p-3 bg-blue-50 rounded-xl">
+                <p className="text-xs font-bold">Élèves: {eleves.map(e=>`${e.id} (${e.age!==undefined?e.age+'ans':''})`).join(', ')}</p>
+                <p className="text-[10px] text-gray-500 mt-1">⚠️ Actuellement en localStorage (ton téléphone). ÉTAPE 5 = on mettra dans Supabase automatiquement.</p>
               </div>
             </div>
           )}
-
-          {role==='parent' && (
-            <div className="mt-6 p-4 bg-green-50 rounded-xl">
-              <p className="font-bold">Élève {eleveId} trouvé ✅</p>
-              <p className="text-sm">Ici bientôt: notes, absences, frais, bulletin PDF</p>
-            </div>
-          )}
-
-          {(role==='fondateur' || role==='enseignant' || role==='secretaire') && (
-            <div className="mt-6 p-4 bg-blue-50 rounded-xl">
-              <p>Espace {role} connecté. Code: {code}</p>
-              <p className="text-xs text-gray-500 mt-2">Prochaine étape: on ajoutera les fonctions spécifiques de chaque espace</p>
-            </div>
-          )}
+          {role!=='admin' && <div className="mt-6 p-4 bg-gray-50 rounded-xl"><p>Connecté {role}</p></div>}
         </div>
       </div>
     );
@@ -170,38 +186,16 @@ export default function App() {
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 bg-blue-900 rounded-full flex items-center justify-center text-white font-bold text-xl">CSP</div>
-            <div>
-              <p className="text-[11px] tracking-[0.2em] text-blue-800 font-bold">ÉCOLE CONNECTÉE</p>
-              <h1 className="font-bold text-slate-900">Complexe Scolaire Protestant</h1>
-              <p className="text-[13px] text-yellow-600 font-bold">CSP « Sagesse Divine »</p>
-              <p className="text-[10px] text-gray-600">Kéra, Temple EPMB Cité de Paix — Tchaourou, Borgou<br/>Directeur : 97 11 22 33 - contact@csp-sagessedivine.bj</p>
-            </div>
+            <div><p className="text-[11px] tracking-[0.2em] text-blue-800 font-bold">ÉCOLE CONNECTÉE</p><h1 className="font-bold">Complexe Scolaire Protestant</h1><p className="text-[13px] text-yellow-600 font-bold">CSP « Sagesse Divine »</p></div>
           </div>
-          <button onClick={()=>setVueInscription(true)} className="hidden md:block px-5 py-2.5 bg-green-600 text-white rounded-xl font-bold">📝 Inscription en ligne</button>
+          <button onClick={()=>setVueInscription(true)} className="hidden md:block px-5 py-2.5 bg-green-600 text-white rounded-xl font-bold">📝 Inscription</button>
         </div>
       </header>
       <main className="max-w-6xl mx-auto px-6 py-10">
-        <div className="text-center mb-8">
-          <h2 className="text-4xl font-extrabold">Bienvenue</h2>
-          <p className="text-gray-600 mt-2">Choisissez votre espace</p>
-          <div className="mt-3 flex justify-center gap-2">
-            <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs">ÉTAPE 3 - Inscription ✅</span>
-            <button onClick={()=>setVueInscription(true)} className="md:hidden px-4 py-1 bg-green-600 text-white rounded-full text-xs">📝 Inscription en ligne</button>
-          </div>
-        </div>
+        <div className="text-center mb-8"><h2 className="text-4xl font-extrabold">Bienvenue</h2><p className="text-sm text-gray-500 mt-2">Correction âge + modif/suppr</p><span className="mt-2 inline-block px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs">ÉTAPE 3 corrigée ✅</span></div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {spaces.map((s)=>(
-            <button key={s.id} onClick={()=>{setRole(s.id); setCode('');}} className="text-left bg-white rounded-2xl shadow p-6 border hover:shadow-lg">
-              <div className={`w-10 h-10 rounded-xl ${s.color} flex items-center justify-center text-white mb-3`}>🔑</div>
-              <h3 className="font-bold">{s.label}</h3>
-              <p className="text-sm text-gray-500">{s.desc}</p>
-            </button>
-          ))}
-          <button onClick={()=>setVueInscription(true)} className="text-left bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow p-6 text-white">
-            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center mb-3">📝</div>
-            <h3 className="font-bold">Inscription en ligne</h3>
-            <p className="text-sm text-green-100">{demandes.filter(d=>d.statut==='en_attente').length} demande(s) en attente</p>
-          </button>
+          {spaces.map((s)=><button key={s.id} onClick={()=>{setRole(s.id); setCode('');}} className="text-left bg-white rounded-2xl shadow p-6 border"><div className={`w-10 h-10 rounded-xl ${s.color} flex items-center justify-center text-white mb-3`}>🔑</div><h3 className="font-bold">{s.label}</h3><p className="text-sm text-gray-500">{s.desc}</p></button>)}
+          <button onClick={()=>setVueInscription(true)} className="text-left bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow p-6 text-white"><div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center mb-3">📝</div><h3 className="font-bold">Inscription en ligne</h3><p className="text-sm text-green-100">{demandes.length} demandes • âge auto</p></button>
         </div>
       </main>
     </div>
